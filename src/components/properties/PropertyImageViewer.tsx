@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
+import { cn } from '@/lib/utils'
 
 interface PropertyImageViewerProps {
   images: string[]
@@ -14,6 +15,15 @@ export function PropertyImageViewer({ images, title }: PropertyImageViewerProps)
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [zoom, setZoom] = useState(1)
+
+  const previewThumbs = safeImages.slice(0, 3)
+  const showViewAllTile = safeImages.length > 3
+  const viewAllPreview = safeImages[3] ?? safeImages[safeImages.length - 1]
+
+  const openGallery = (startAt = 0) => {
+    setIndex(startAt)
+    setLightboxOpen(true)
+  }
 
   const goPrev = () => {
     setIndex((prev) => (prev - 1 + safeImages.length) % safeImages.length)
@@ -107,8 +117,15 @@ export function PropertyImageViewer({ images, title }: PropertyImageViewerProps)
       </div>
 
       {safeImages.length > 1 && (
-        <div className="grid grid-cols-4 gap-2 mb-10">
-          {safeImages.map((img, i) => (
+        <div
+          className={cn('grid gap-2 mb-10', showViewAllTile ? 'grid-cols-4' : 'grid-cols-3')}
+          style={
+            !showViewAllTile
+              ? { gridTemplateColumns: `repeat(${previewThumbs.length}, minmax(0, 1fr))` }
+              : undefined
+          }
+        >
+          {previewThumbs.map((img, i) => (
             <button
               key={img + i}
               type="button"
@@ -125,6 +142,26 @@ export function PropertyImageViewer({ images, title }: PropertyImageViewerProps)
               />
             </button>
           ))}
+          {showViewAllTile && (
+            <button
+              type="button"
+              onClick={() => openGallery(0)}
+              className="relative aspect-square overflow-hidden bg-stone-100 border border-transparent"
+              aria-label={`Ver todas las imágenes (${safeImages.length})`}
+            >
+              <Image
+                src={viewAllPreview}
+                alt=""
+                fill
+                className="object-cover scale-110 blur-[3px] brightness-75"
+                sizes="15vw"
+                aria-hidden
+              />
+              <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white text-xs font-medium tracking-wide uppercase">
+                Ver todas
+              </span>
+            </button>
+          )}
         </div>
       )}
 
