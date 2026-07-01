@@ -94,14 +94,14 @@ export const STATUS_LABELS: Record<string, string> = {
 export const STATUS_BADGE_CLASSES: Record<string, string> = {
   disponible: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   reservado: 'bg-stone-100 text-stone-600 border-stone-300',
-  vendido: 'status-badge-vendido border',
+  vendido: 'bg-red-50 text-red-700 border-red-200',
 }
 
 /** Etiquetas de estado en el panel admin (sin borde). */
 export const STATUS_BADGE_CLASSES_ADMIN: Record<string, string> = {
   disponible: 'text-emerald-600 bg-emerald-50',
   reservado: 'text-stone-600 bg-stone-100',
-  vendido: 'status-badge-vendido',
+  vendido: 'text-red-600 bg-red-50',
 }
 
 export const TYPE_LABELS: Record<string, string> = {
