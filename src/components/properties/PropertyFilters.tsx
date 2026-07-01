@@ -49,7 +49,6 @@ function parseSelectedExtras(extras: string | null, legacyExtra: string | null):
 export function PropertyFilters({ availableProvinces }: { availableProvinces: string[] }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [mobileOpen, setMobileOpen] = useState(false)
 
   const type = searchParams.get('type') || ''
   const operation = searchParams.get('operation') || ''
@@ -62,6 +61,19 @@ export function PropertyFilters({ availableProvinces }: { availableProvinces: st
   const selectedExtras = parseSelectedExtras(searchParams.get('extras'), searchParams.get('extra'))
   const minPriceValue = minPrice ? Number(minPrice) : ''
   const maxPriceValue = maxPrice ? Number(maxPrice) : ''
+
+  const hasFilters =
+    type ||
+    operation ||
+    status ||
+    selectedExtras.length > 0 ||
+    province ||
+    bedrooms ||
+    bathrooms ||
+    minPrice ||
+    maxPrice
+
+  const [open, setOpen] = useState(Boolean(hasFilters))
 
   const updateParams = useCallback((mutate: (params: URLSearchParams) => void) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -86,30 +98,37 @@ export function PropertyFilters({ availableProvinces }: { availableProvinces: st
 
   const clearAll = () => {
     router.replace('/propiedades', { scroll: false })
-    setMobileOpen(false)
+    setOpen(false)
   }
-
-  const hasFilters =
-    type ||
-    operation ||
-    status ||
-    selectedExtras.length > 0 ||
-    province ||
-    bedrooms ||
-    bathrooms ||
-    minPrice ||
-    maxPrice
 
   return (
     <div className="bg-white border-b border-stone-100">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
-        <div className="flex items-center justify-end py-2.5">
+        <div className="flex items-center justify-between gap-4 py-3">
           <button
             type="button"
-            onClick={() => setMobileOpen((v) => !v)}
-            className="mr-auto md:hidden inline-flex items-center rounded-md border border-stone-200 px-4 py-2 text-sm text-stone-700"
+            onClick={() => setOpen((v) => !v)}
+            className="inline-flex items-center gap-2 text-sm text-stone-800 hover:text-stone-950 transition-colors"
+            aria-expanded={open}
           >
-            {mobileOpen ? 'Cerrar filtros' : 'Filtros'}
+            <span className="font-medium">Filtros</span>
+            {hasFilters && (
+              <span className="rounded-full bg-brand-red/10 px-2 py-0.5 text-[11px] font-medium text-brand-red">
+                Activos
+              </span>
+            )}
+            <svg
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden
+              className={`h-4 w-4 text-stone-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+            >
+              <path
+                fillRule="evenodd"
+                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                clipRule="evenodd"
+              />
+            </svg>
           </button>
           {hasFilters && (
             <button onClick={clearAll} className="text-sm text-gold hover:text-gold-dark transition-colors">
@@ -118,8 +137,14 @@ export function PropertyFilters({ availableProvinces }: { availableProvinces: st
           )}
         </div>
 
-        <div className={`${mobileOpen ? 'block' : 'hidden'} md:block py-3 md:py-4`}>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div
+          className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+            open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+          }`}
+        >
+          <div className="overflow-hidden">
+            <div className="pb-4 pt-1">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <div>
               <label className="text-xs text-stone-500 mb-1.5 block">Tipo de inmueble</label>
               <select value={type} onChange={(e) => updateParam('type', e.target.value)} className={selectClass}>
@@ -256,6 +281,8 @@ export function PropertyFilters({ availableProvinces }: { availableProvinces: st
                     )
                   })}
                 </div>
+              </div>
+            </div>
               </div>
             </div>
           </div>
