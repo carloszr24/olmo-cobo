@@ -22,6 +22,7 @@ export interface Property {
   garage?: string | null
   elevator?: string | null
   furnished?: string | null
+  extras?: string[] | null
   energyRating?: string | null
   energyValue?: number | null
   emissionsRating?: string | null
@@ -97,6 +98,7 @@ export interface PropertyFormData {
   garage: string
   elevator: string
   furnished: string
+  extras: string[]
   energyRating: string
   energyValue: string
   emissionsRating: string

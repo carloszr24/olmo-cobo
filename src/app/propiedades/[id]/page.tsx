@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { CONTACT, phoneHref, whatsappHref } from '@/lib/contact'
 import { getPropertyById } from '@/lib/properties-store'
+import { getExtraLabel, getPropertyExtras, propertyHasExtra } from '@/lib/property-extras'
 import { formatPrice, OPERATION_LABELS, parseImages, STATUS_LABELS, TYPE_LABELS } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { PropertyImageViewer } from '@/components/properties/PropertyImageViewer'
@@ -32,25 +33,23 @@ export default async function PropertyDetailPage({
 
   const images = parseImages(property.images)
   const floorLabel = property.floor?.trim()
-  const elevatorLabel = property.elevator?.trim().toLowerCase()
-  const hasElevator =
-    elevatorLabel === 'si' ||
-    elevatorLabel === 'sí' ||
-    elevatorLabel === 'con ascensor' ||
-    elevatorLabel === 'true'
+  const hasElevator = propertyHasExtra(property, 'elevator')
   const showFloorCard = Boolean(floorLabel || hasElevator)
   const whatsappText = `Hola! Me gustaría solicitar información sobre ${property.title}`
   const whatsappUrl = `${whatsappHref}?text=${encodeURIComponent(whatsappText)}`
+  const heatingDetail =
+    property.heating && !['sí', 'si', 's'].includes(property.heating.trim().toLowerCase())
+      ? property.heating
+      : null
+  const extrasSummary = getPropertyExtras(property).map((extraId) => getExtraLabel(extraId)).join(', ')
   const featureItems = [
     { label: 'Tipo de inmueble', value: TYPE_LABELS[property.type] || property.type },
     { label: 'Disponibilidad', value: property.availability },
     { label: 'Agua caliente', value: property.hotWater },
-    { label: 'Calefacción', value: property.heating },
+    { label: 'Tipo de calefacción', value: heatingDetail },
     { label: 'Estado', value: property.condition },
     { label: 'Antigüedad', value: property.propertyAge },
-    { label: 'Garaje', value: property.garage },
-    { label: 'Ascensor', value: property.elevator },
-    { label: 'Amueblado', value: property.furnished },
+    { label: 'Extras', value: extrasSummary || null },
     {
       label: 'Energía',
       value:

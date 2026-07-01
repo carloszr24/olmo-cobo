@@ -12,19 +12,10 @@ import {
   STATUS_LABELS,
   TYPE_LABELS,
 } from '@/lib/utils'
+import { PROPERTY_EXTRA_OPTIONS } from '@/lib/property-extras'
 
 const PRICE_MIN = 0
 const PRICE_MAX = 1000000
-
-export const EXTRA_FILTER_OPTIONS = [
-  { value: 'garage', label: 'Garaje' },
-  { value: 'elevator', label: 'Ascensor' },
-  { value: 'furnished', label: 'Amueblado' },
-  { value: 'heating', label: 'Calefacción' },
-  { value: 'pool', label: 'Piscina' },
-  { value: 'storage', label: 'Trastero' },
-  { value: 'common_areas', label: 'Zonas comunes' },
-] as const
 
 function formatEuro(value: number): string {
   return new Intl.NumberFormat('es-ES', {
@@ -254,7 +245,7 @@ export function PropertyFilters({ availableProvinces }: { availableProvinces: st
               <label className="text-xs text-stone-500 mb-1.5 block">Extras</label>
               <div className="rounded-2xl border border-stone-200 bg-white p-3">
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                  {EXTRA_FILTER_OPTIONS.map((option) => {
+                  {PROPERTY_EXTRA_OPTIONS.map((option) => {
                     const checked = selectedExtras.includes(option.value)
                     return (
                       <label

@@ -12,13 +12,7 @@ import {
 import type { Property } from '@/types'
 import { getPropertyProvince } from '@/lib/property-location'
 import type { PropertyFilters } from '@/types'
-
-function hasExtra(value?: string | null): boolean {
-  if (!value) return false
-  const normalized = value.trim().toLowerCase()
-  if (!normalized) return false
-  return normalized === 'si' || normalized === 'sí' || normalized === 'true' || normalized.startsWith('con ')
-}
+import { propertyHasExtra } from '@/lib/property-extras'
 
 function matchesBedrooms(property: Property, minBedrooms: string): boolean {
   if (property.bedrooms == null) return false
@@ -37,25 +31,7 @@ function matchesBathrooms(property: Property, minBathrooms: string): boolean {
 }
 
 function matchesExtra(property: Property, extra: string): boolean {
-  const text = `${property.description} ${property.garage ?? ''}`.toLowerCase()
-  switch (extra) {
-    case 'garage':
-      return hasExtra(property.garage) || /plaza de garaje|garaje/i.test(text)
-    case 'elevator':
-      return hasExtra(property.elevator)
-    case 'furnished':
-      return hasExtra(property.furnished)
-    case 'heating':
-      return hasExtra(property.heating)
-    case 'pool':
-      return /piscina/i.test(text)
-    case 'storage':
-      return /trastero/i.test(text)
-    case 'common_areas':
-      return /zonas comunes/i.test(text)
-    default:
-      return true
-  }
+  return propertyHasExtra(property, extra)
 }
 
 function parseExtrasParam(extras?: string, legacyExtra?: string): string[] {

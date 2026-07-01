@@ -1,5 +1,6 @@
 import type { Property } from '@/types'
 import { createAdminSupabase } from '@/lib/supabase/admin'
+import { normalizeExtraIds, parseExtrasColumn, syncLegacyExtraFields } from '@/lib/property-extras'
 
 export function isSupabaseConfigured(): boolean {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
@@ -61,6 +62,7 @@ export type PropertyRow = {
   garage: string | null
   elevator: string | null
   furnished: string | null
+  extras: unknown
   energy_rating: string | null
   energy_value: number | null
   emissions_rating: string | null
@@ -95,6 +97,7 @@ export function rowToProperty(r: PropertyRow): Property {
     garage: r.garage,
     elevator: r.elevator,
     furnished: r.furnished,
+    extras: parseExtrasColumn(r.extras),
     energyRating: r.energy_rating,
     energyValue: r.energy_value,
     emissionsRating: r.emissions_rating,
@@ -133,6 +136,7 @@ export type PropertyInsert = {
   garage: string | null
   elevator: string | null
   furnished: string | null
+  extras: unknown
   energy_rating: string | null
   energy_value: number | null
   emissions_rating: string | null
@@ -163,6 +167,7 @@ export function bodyToInsert(body: {
   garage?: string | null
   elevator?: string | null
   furnished?: string | null
+  extras?: string[] | null
   energyRating?: string | null
   energyValue?: string | number | null
   emissionsRating?: string | null
@@ -171,6 +176,10 @@ export function bodyToInsert(body: {
 }): PropertyInsert {
   const imagesStr = Array.isArray(body.images) ? JSON.stringify(body.images) : String(body.images)
   const province = body.province?.trim() || null
+  const extras = normalizeExtraIds(body.extras ?? [])
+  const legacyExtras = syncLegacyExtraFields(extras)
+  const heatingDetail = body.heating?.trim() || null
+
   return {
     title: body.title,
     price: typeof body.price === 'number' ? body.price : parseFloat(String(body.price)),
@@ -193,13 +202,14 @@ export function bodyToInsert(body: {
       : null,
     availability: body.availability || null,
     hot_water: body.hotWater || null,
-    heating: body.heating || null,
+    heating: heatingDetail || (extras.includes('heating') ? 'Sí' : null),
     condition: body.condition || null,
     property_age: body.propertyAge || null,
     floor: body.floor || null,
-    garage: body.garage || null,
-    elevator: body.elevator || null,
-    furnished: body.furnished || null,
+    garage: legacyExtras.garage,
+    elevator: legacyExtras.elevator,
+    furnished: legacyExtras.furnished,
+    extras,
     energy_rating: body.energyRating || null,
     energy_value: body.energyValue !== undefined && body.energyValue !== '' && body.energyValue !== null
       ? parseFloat(String(body.energyValue))

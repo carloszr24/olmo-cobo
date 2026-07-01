@@ -5,6 +5,8 @@ import { Property } from '@/types'
 import { MAX_FEATURED_ON_HOME, MAX_PROPERTY_IMAGES } from '@/lib/property-db'
 import { formatPrice, OPERATION_LABELS, PROPERTY_OPERATIONS, PROPERTY_PROVINCES, PROPERTY_STATUSES, PROPERTY_TYPES, STATUS_LABELS, TYPE_LABELS } from '@/lib/utils'
 import { getPropertyProvince } from '@/lib/property-location'
+import { getPropertyExtras, type PropertyExtraId } from '@/lib/property-extras'
+import { ExtrasDropdown } from '@/components/admin/ExtrasDropdown'
 import { cn } from '@/lib/utils'
 
 type ImageItem =
@@ -54,9 +56,7 @@ const emptyForm = {
   condition: '',
   propertyAge: '',
   floor: '',
-  garage: '',
-  elevator: '',
-  furnished: '',
+  extras: [] as PropertyExtraId[],
   energyRating: '',
   energyValue: '',
   emissionsRating: '',
@@ -201,13 +201,11 @@ export default function AdminPage() {
       sqMeters: p.sqMeters?.toString() || '',
       availability: p.availability || '',
       hotWater: p.hotWater || '',
-      heating: p.heating || '',
+      heating: p.heating && !['sí', 'si', 's'].includes(p.heating.trim().toLowerCase()) ? p.heating : '',
       condition: p.condition || '',
       propertyAge: p.propertyAge || '',
       floor: p.floor || '',
-      garage: p.garage || '',
-      elevator: p.elevator || '',
-      furnished: p.furnished || '',
+      extras: getPropertyExtras(p),
       energyRating: p.energyRating || '',
       energyValue: p.energyValue?.toString() || '',
       emissionsRating: p.emissionsRating || '',
@@ -633,8 +631,9 @@ export default function AdminPage() {
                       className="w-full border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:border-stone-900" />
                   </div>
                   <div>
-                    <label className="text-xs text-stone-500 block mb-1.5">Calefacción</label>
+                    <label className="text-xs text-stone-500 block mb-1.5">Tipo de calefacción (opcional)</label>
                     <input name="heating" value={form.heating} onChange={handleChange}
+                      placeholder="Ej: Gas natural"
                       className="w-full border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:border-stone-900" />
                   </div>
                   <div>
@@ -653,20 +652,12 @@ export default function AdminPage() {
                       placeholder="Ej: 6º"
                       className="w-full border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:border-stone-900" />
                   </div>
-                  <div>
-                    <label className="text-xs text-stone-500 block mb-1.5">Garaje</label>
-                    <input name="garage" value={form.garage} onChange={handleChange}
-                      className="w-full border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:border-stone-900" />
-                  </div>
-                  <div>
-                    <label className="text-xs text-stone-500 block mb-1.5">Ascensor</label>
-                    <input name="elevator" value={form.elevator} onChange={handleChange}
-                      className="w-full border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:border-stone-900" />
-                  </div>
-                  <div>
-                    <label className="text-xs text-stone-500 block mb-1.5">Amueblado</label>
-                    <input name="furnished" value={form.furnished} onChange={handleChange}
-                      className="w-full border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:border-stone-900" />
+                  <div className="md:col-span-2">
+                    <label className="text-xs text-stone-500 block mb-1.5">Extras del inmueble</label>
+                    <ExtrasDropdown
+                      value={form.extras}
+                      onChange={(extras) => setForm({ ...form, extras })}
+                    />
                   </div>
                   <div>
                     <label className="text-xs text-stone-500 block mb-1.5">Etiqueta energética</label>
