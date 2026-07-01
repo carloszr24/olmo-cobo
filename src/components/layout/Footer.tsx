@@ -83,8 +83,11 @@ export function Footer() {
             </ul>
           </div>
         </div>
-        <div className="border-t border-stone-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-stone-500">
+        <div className="border-t border-stone-800 pt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-xs text-stone-500">
           <span>© {new Date().getFullYear()} {AGENT.name}. Todos los derechos reservados.</span>
+          <p className="md:max-w-xl md:text-right leading-relaxed text-stone-500">
+            Toda la información contenida en esta web carece de carácter contractual, siendo su contenido meramente informativo.
+          </p>
         </div>
       </div>
     </footer>
