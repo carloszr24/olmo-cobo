@@ -1,5 +1,5 @@
-import { LEAD_INTENT_LABELS, LEAD_SOURCE_LABELS } from '@/lib/leads'
-import type { LeadIntent, LeadSource } from '@/types'
+import { LEAD_SOURCE_LABELS } from '@/lib/leads'
+import type { LeadSource } from '@/types'
 
 export type LeadNotificationPayload = {
   full_name: string
@@ -10,6 +10,13 @@ export type LeadNotificationPayload = {
   notes?: string | null
   property_ref?: string | null
   sale_timeline?: string | null
+  property_type?: string | null
+  location?: string | null
+  sq_meters?: string | null
+  bedrooms?: string | null
+  bathrooms?: string | null
+  condition?: string | null
+  observations?: string | null
 }
 
 const BRAND_RED = '#C8102E'
@@ -24,34 +31,29 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;')
 }
 
-function intentLabel(intent: string): string {
-  return LEAD_INTENT_LABELS[intent as LeadIntent] || intent
-}
-
 function sourceLabel(source: string): string {
   return LEAD_SOURCE_LABELS[source as LeadSource] || source
 }
 
 function buildSubject(record: LeadNotificationPayload): string {
   const name = record.full_name
-  const intent = intentLabel(record.intent)
 
   switch (record.source) {
     case 'web_contacto':
-      return `[YMAR] ${name} · Contacto web · ${intent}`
+      return `Nuevo contacto solicitado! — ${name}`
     case 'web_valoracion':
-      return `[YMAR] ${name} · Valoración gratuita`
+      return `Nueva valoración gratuita solicitada! — ${name}`
     default:
-      return `[YMAR] Nuevo lead · ${name}`
+      return `Nuevo lead — ${name}`
   }
 }
 
 function buildHeadline(record: LeadNotificationPayload): string {
   switch (record.source) {
     case 'web_contacto':
-      return 'Nuevo mensaje de contacto'
+      return 'Nuevo contacto solicitado'
     case 'web_valoracion':
-      return 'Nueva solicitud de valoración'
+      return 'Nueva valoración gratuita solicitada'
     default:
       return 'Nuevo aviso en la web'
   }
@@ -68,9 +70,9 @@ function buildBadge(record: LeadNotificationPayload): { label: string; color: st
   }
 }
 
-type FieldRow = { label: string; value: string; href?: string }
+type FieldRow = { label: string; value: string; href?: string; multiline?: boolean }
 
-function buildFields(record: LeadNotificationPayload): FieldRow[] {
+function contactFields(record: LeadNotificationPayload): FieldRow[] {
   const fields: FieldRow[] = [
     { label: 'Nombre', value: record.full_name },
     { label: 'Teléfono', value: record.phone, href: `tel:${record.phone.replace(/\s/g, '')}` },
@@ -80,21 +82,67 @@ function buildFields(record: LeadNotificationPayload): FieldRow[] {
     fields.push({ label: 'Email', value: record.email, href: `mailto:${record.email}` })
   }
 
-  fields.push({ label: 'Interés', value: intentLabel(record.intent) })
+  if (record.notes) {
+    fields.push({ label: 'Mensaje', value: record.notes, multiline: true })
+  }
 
-  if (record.property_ref) {
-    fields.push({ label: 'Referencia', value: record.property_ref })
+  return fields
+}
+
+function valoracionFields(record: LeadNotificationPayload): FieldRow[] {
+  const fields: FieldRow[] = [
+    { label: 'Nombre', value: record.full_name },
+    { label: 'Teléfono', value: record.phone, href: `tel:${record.phone.replace(/\s/g, '')}` },
+  ]
+
+  if (record.email) {
+    fields.push({ label: 'Email', value: record.email, href: `mailto:${record.email}` })
+  }
+
+  if (record.property_type) {
+    fields.push({ label: 'Tipo de inmueble', value: record.property_type })
+  }
+
+  if (record.location) {
+    fields.push({ label: 'Zona / Dirección', value: record.location })
+  }
+
+  if (record.sq_meters) {
+    fields.push({ label: 'Metros cuadrados', value: record.sq_meters })
+  }
+
+  if (record.bedrooms) {
+    fields.push({ label: 'Habitaciones', value: record.bedrooms })
+  }
+
+  if (record.bathrooms) {
+    fields.push({ label: 'Baños', value: record.bathrooms })
+  }
+
+  if (record.condition) {
+    fields.push({ label: 'Estado', value: record.condition })
   }
 
   if (record.sale_timeline) {
     fields.push({ label: 'Plazo de venta', value: record.sale_timeline })
   }
 
-  if (record.notes) {
-    fields.push({ label: 'Mensaje', value: record.notes })
+  if (record.observations) {
+    fields.push({ label: 'Observaciones', value: record.observations, multiline: true })
   }
 
   return fields
+}
+
+function buildFields(record: LeadNotificationPayload): FieldRow[] {
+  switch (record.source) {
+    case 'web_contacto':
+      return contactFields(record)
+    case 'web_valoracion':
+      return valoracionFields(record)
+    default:
+      return contactFields(record)
+  }
 }
 
 function renderFieldValue(field: FieldRow): string {
@@ -115,25 +163,19 @@ function buildEmailContent(record: LeadNotificationPayload) {
     timeStyle: 'short',
   })
 
-  const textLines = [
+  const text = [
     headline,
     '',
     ...fields.map((field) => `${field.label}: ${field.value}`),
     '',
     `Recibido: ${now}`,
     SITE_URL,
-  ]
-
-  const text = textLines.join('\n')
+  ].join('\n')
 
   const fieldRows = fields
     .map((field) => {
-      const isMessage = field.label === 'Mensaje'
-      const valueCell = isMessage
-        ? `<td style="padding:12px 16px;background:#fafaf9;border:1px solid #e7e5e4;border-radius:8px;white-space:pre-wrap;line-height:1.6">${renderFieldValue(field)}</td>`
-        : `<td style="padding:10px 0;text-align:right">${renderFieldValue(field)}</td>`
-
-      if (isMessage) {
+      if (field.multiline) {
+        const valueCell = `<td style="padding:12px 16px;background:#fafaf9;border:1px solid #e7e5e4;border-radius:8px;white-space:pre-wrap;line-height:1.6">${renderFieldValue(field)}</td>`
         return `
           <tr>
             <td colspan="2" style="padding:16px 0 6px">
@@ -146,7 +188,7 @@ function buildEmailContent(record: LeadNotificationPayload) {
       return `
           <tr>
             <td style="padding:10px 0;font-size:13px;font-weight:600;color:#78716c;vertical-align:top;width:38%">${escapeHtml(field.label)}</td>
-            ${valueCell}
+            <td style="padding:10px 0;text-align:right">${renderFieldValue(field)}</td>
           </tr>`
     })
     .join('')

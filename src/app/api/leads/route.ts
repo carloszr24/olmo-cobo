@@ -40,6 +40,13 @@ export async function POST(request: NextRequest) {
     const priority = String(body.priority || 'media')
     const propertyRef = String(body.propertyRef || '').trim() || null
     const saleTimeline = String(body.saleTimeline || '').trim() || null
+    const propertyType = String(body.propertyType || '').trim() || null
+    const location = String(body.location || '').trim() || null
+    const sqMeters = String(body.sqMeters || '').trim() || null
+    const bedrooms = String(body.bedrooms || '').trim() || null
+    const bathrooms = String(body.bathrooms || '').trim() || null
+    const condition = String(body.condition || '').trim() || null
+    const observations = String(body.observations || '').trim() || null
 
     if (!fullName || !phone) {
       return NextResponse.json({ error: 'Nombre y telefono son obligatorios' }, { status: 400 })
@@ -84,6 +91,13 @@ export async function POST(request: NextRequest) {
       notes,
       property_ref: propertyRef,
       sale_timeline: saleTimeline,
+      property_type: propertyType,
+      location,
+      sq_meters: sqMeters,
+      bedrooms,
+      bathrooms,
+      condition,
+      observations,
     })
 
     if (!emailResult.ok) {

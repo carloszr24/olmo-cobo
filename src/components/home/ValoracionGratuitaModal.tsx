@@ -153,6 +153,13 @@ export function ValoracionGratuitaModal({ triggerClassName = '', triggerLabel = 
           priority: form.saleTimeline === 'Lo antes posible' ? 'alta' : 'media',
           saleTimeline: form.saleTimeline,
           propertyRef: `${form.propertyType} - ${form.location}`,
+          propertyType: form.propertyType,
+          location: form.location,
+          sqMeters: form.sqMeters,
+          bedrooms: form.bedrooms || null,
+          bathrooms: form.bathrooms || null,
+          condition: form.condition || null,
+          observations: form.notes || null,
           notes: [
             `Tipo: ${form.propertyType}`,
             `Zona/Direccion: ${form.location}`,
