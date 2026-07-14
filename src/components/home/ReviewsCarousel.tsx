@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { REVIEWS } from '@/data/reviews'
+import { GOOGLE_RATING, PROPERTIES_SOLD_LABEL, REVIEWS } from '@/data/reviews'
 
 function StarRow() {
   return (
@@ -139,9 +139,9 @@ export function ReviewsCarousel() {
         >
           <div className="mx-auto grid max-w-5xl grid-cols-1 gap-3 rounded-2xl border border-stone-200 bg-white p-3 shadow-sm sm:grid-cols-3 sm:gap-0 sm:p-2">
             {[
-              { value: '+500', label: 'propiedades vendidas' },
+              { value: 'Más de 100', label: 'propiedades vendidas' },
               { value: '< 60 días', label: 'tiempo medio de cierre' },
-              { value: '4,9 / 5', label: 'estrellas en Google' },
+              { value: GOOGLE_RATING, label: 'en Google' },
             ].map((stat, idx) => (
               <div
                 key={stat.label}
@@ -165,7 +165,7 @@ export function ReviewsCarousel() {
           <h2 className="section-title mb-5">Nuestra prioridad: el cliente</h2>
           <div className="flex flex-col items-center gap-2 text-stone-700">
             <StarRow />
-            <p className="text-base md:text-lg font-medium">Líderes en ofrecer un servicio adaptado a las necesidades del cliente</p>
+            <p className="text-base md:text-lg font-medium">{PROPERTIES_SOLD_LABEL} con un trato cercano y profesional</p>
           </div>
         </div>
 
